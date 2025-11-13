@@ -1,0 +1,66 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model VocabularyItem {
+  id          String   @id @default(uuid())
+  word        String
+  translation String?
+  language    String   // e.g., "Spanish", "French", etc.
+  isKnown     Boolean  @default(false)
+  context     String?  // Example sentence or context where it was used
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([language])
+  @@index([isKnown])
+}
+
+model Transcript {
+  id           String           @id @default(uuid())
+  title        String?
+  language     String
+  uploadDate   DateTime         @default(now())
+  lines        TranscriptLine[]
+  extractedItems ExtractedItem[]
+
+  @@index([language])
+}
+
+model TranscriptLine {
+  id           String     @id @default(uuid())
+  transcriptId String
+  transcript   Transcript @relation(fields: [transcriptId], references: [id], onDelete: Cascade)
+  speaker      String     // "teacher" or "student"
+  text         String
+  timestamp    String?    // Optional timestamp in the format "00:00:00"
+  order        Int        // Order of the line in the transcript
+
+  @@index([transcriptId])
+  @@index([speaker])
+}
+
+model ExtractedItem {
+  id           String     @id @default(uuid())
+  transcriptId String
+  transcript   Transcript @relation(fields: [transcriptId], references: [id], onDelete: Cascade)
+  word         String
+  context      String     // The sentence/phrase where it was found
+  speaker      String     // Who said it (usually "teacher")
+  confidence   String     @default("medium") // "high", "medium", "low" - how confident we are this was taught
+  isAddedToVocab Boolean  @default(false)
+  extractionReason String? // Why we think this was taught (e.g., "explicit definition", "repetition", etc.)
+  createdAt    DateTime   @default(now())
+
+  @@index([transcriptId])
+  @@index([isAddedToVocab])
+}
