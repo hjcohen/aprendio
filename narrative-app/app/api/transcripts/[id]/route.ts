@@ -4,11 +4,12 @@ import { prisma } from '@/lib/db';
 // GET /api/transcripts/[id] - Get a single transcript with all details
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const transcript = await prisma.transcript.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         lines: {
           orderBy: { order: 'asc' },
@@ -39,11 +40,12 @@ export async function GET(
 // DELETE /api/transcripts/[id] - Delete a transcript
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     await prisma.transcript.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ message: 'Deleted successfully' });

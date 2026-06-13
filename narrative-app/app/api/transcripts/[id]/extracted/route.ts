@@ -4,9 +4,10 @@ import { prisma } from '@/lib/db';
 // PATCH /api/transcripts/[id]/extracted - Mark extracted item as added to vocab
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const { extractedItemId, addToVocab } = body;
 
@@ -26,7 +27,7 @@ export async function PATCH(
     // If adding to vocab, also create a vocabulary item
     if (addToVocab !== false) {
       const transcript = await prisma.transcript.findUnique({
-        where: { id: params.id },
+        where: { id },
       });
 
       if (transcript) {

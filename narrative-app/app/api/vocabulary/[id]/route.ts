@@ -4,11 +4,12 @@ import { prisma } from '@/lib/db';
 // GET /api/vocabulary/[id] - Get a single vocabulary item
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const item = await prisma.vocabularyItem.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!item) {
@@ -31,14 +32,15 @@ export async function GET(
 // PATCH /api/vocabulary/[id] - Update a vocabulary item
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const { word, translation, language, isKnown, context, notes } = body;
 
     const item = await prisma.vocabularyItem.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...(word !== undefined && { word }),
         ...(translation !== undefined && { translation }),
@@ -62,11 +64,12 @@ export async function PATCH(
 // DELETE /api/vocabulary/[id] - Delete a vocabulary item
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     await prisma.vocabularyItem.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ message: 'Deleted successfully' });
